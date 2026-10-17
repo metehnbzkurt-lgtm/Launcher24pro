@@ -1,0 +1,32 @@
+name: Build APK from ZIP
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "master" ]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ZIP'i aç
+        run: unzip -q MaterialLauncher-Full.zip -d src
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
+      - uses: android-actions/setup-android@v3
+      - name: SDK kur
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: APK derle
+        run: gradle -p src assembleDebug assembleRelease --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MaterialLauncher-apk
+          path: |
+            src/app/build/outputs/apk/debug/app-debug.apk
+            src/app/build/outputs/apk/release/app-release.apk
